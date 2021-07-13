@@ -144,6 +144,7 @@ module "compute" {
   det_version = var.det_version
   scheme = var.scheme
   port = var.port
+  master_config_template = var.master_config_template
   master_docker_network = var.master_docker_network
   master_instance_type = var.master_instance_type
   agent_docker_network = var.agent_docker_network

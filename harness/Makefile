@@ -78,3 +78,7 @@ determined/common/schemas/expconf/_gen.py: $(GENERATION_INPUTS)
 .PHONY: gen-deploy-aws-vcpu-mapping
 gen-deploy-aws-vcpu-mapping:
 	python -m determined.deploy.aws.gen_vcpu_mapping determined/deploy/aws/vcpu_mapping.yaml
+
+.PHONY: aws-master-config-inject
+aws-master-config-inject:
+	python -m determined.deploy.aws.master_config_inject
