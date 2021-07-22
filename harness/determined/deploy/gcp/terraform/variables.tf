@@ -207,7 +207,7 @@ variable "master_config_template" {
   type = string
   default = <<EOF
 checkpoint_storage:
-  type: s3
+  type: gcs
   bucket: {{ .checkpoint_storage.bucket }}
   save_experiment_best: 0
   save_trial_best: 1
