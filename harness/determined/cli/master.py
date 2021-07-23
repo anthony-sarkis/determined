@@ -62,7 +62,7 @@ def logs(args: Namespace) -> None:
 args_description = [
     Cmd("m|aster", None, "manage master", [
         Cmd("config", config, "fetch master config", [
-            Arg("-o", "--output", type=str, default="json",
+            Arg("-o", "--output", type=str, default="yaml",
                 help="Output format, one of json|yaml")
         ]),
         Cmd("logs", logs, "fetch master logs", [
