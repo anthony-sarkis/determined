@@ -208,11 +208,8 @@ Spinning up or updating the Cluster
       -  False
 
    -  -  ``--master-config-template-path``
-
-      -  Path to the custom ``master.yaml`` template. Default template
-         can be obtained using ``det deploy aws
-         dump-master-config-template``.
-
+      -  Path to the custom ``master.yaml`` template. Default template can be obtained using ``det
+         deploy aws dump-master-config-template``.
       -  Not set
 
 Tearing Down the Cluster
@@ -278,14 +275,12 @@ Printing the default ``master.yaml`` template
  Custom master.yaml templates
 ******************************
 
-Advanced users who require a deep customization of master settings
-(i.e., the ``master.yaml`` config file) can use the ``master.yaml``
-templating feature. Since ``det deploy aws`` fills in plenty of
-infrastructure-related values such as VPC subnet ids or IAM instance
-profile roles, we provide a simplified templating solution, similar to
-:ref:`helm charts in kubernetes <install-on-kubernetes>`. Template
-language is based on golang templates, and includes ``sprig`` helper
-library and ``toYaml`` serialization helper.
+Advanced users who require a deep customization of master settings (i.e., the ``master.yaml`` config
+file) can use the ``master.yaml`` templating feature. Since ``det deploy aws`` fills in plenty of
+infrastructure-related values such as VPC subnet ids or IAM instance profile roles, we provide a
+simplified templating solution, similar to :ref:`helm charts in kubernetes <install-on-kubernetes>`.
+Template language is based on golang templates, and includes ``sprig`` helper library and ``toYaml``
+serialization helper.
 
 Example workflow:
 
@@ -295,15 +290,12 @@ Example workflow:
 
       det deploy aws dump-master-config-template > /path/to/master.yaml.tmpl
 
-#. Customize the template as you see fit by editing it in any text
-   editor. For example, let's say a user wants to utilize (default)
-   ``p2.8xlarge`` 4-GPU instances for the default compute pool, but they
-   also often run single-GPU notebook jobs, for which a single
-   ``p2.xlarge`` instance would be perfect. So, you want to add a third
-   pool ``compute-pool-solo`` with a customized instance type.
+#. Customize the template as you see fit by editing it in any text editor. For example, let's say a
+   user wants to utilize (default) ``p2.8xlarge`` 4-GPU instances for the default compute pool, but
+   they also often run single-GPU notebook jobs, for which a single ``p2.xlarge`` instance would be
+   perfect. So, you want to add a third pool ``compute-pool-solo`` with a customized instance type.
 
-   Start with the default template, and find the ``resource_pools``
-   section:
+   Start with the default template, and find the ``resource_pools`` section:
 
    .. code:: yaml
 
@@ -337,11 +329,9 @@ Example workflow:
 
       det deploy aws <ALL PREVIOUSLY USED FLAGS> --master-config-template-path /path/to/edited/master.yaml.tmpl
 
-#. All set! Check the `Cluster` page in WebUI to ensure your cluster has
-   3 resource pools. In case of errors, ssh to the master instance as
-   instructed by ``det deploy aws`` output, and check
-   ``/var/log/cloud-init-output.log`` or ``sudo docker logs
-   determined-master``.
+#. All set! Check the `Cluster` page in WebUI to ensure your cluster has 3 resource pools. In case
+   of errors, ssh to the master instance as instructed by ``det deploy aws`` output, and check
+   ``/var/log/cloud-init-output.log`` or ``sudo docker logs determined-master``.
 
 .. _aws-modifying-deployment:
 
