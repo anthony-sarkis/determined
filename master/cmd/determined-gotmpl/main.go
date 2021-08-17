@@ -82,6 +82,9 @@ func main() {
 			`Usage: determined-gotmpl [-i data.yaml] [-o output.txt] [key=value] template [template ...]
 
 Based on https://github.com/NateScarlet/gotmpl
+Adds:
+ - input yaml context support.
+ - toYaml and reflectKind helpers.
 `)
 	}
 	var output string
@@ -99,8 +102,7 @@ Based on https://github.com/NateScarlet/gotmpl
 		if err != nil {
 			log.Fatal(err)
 		}
-		data["Name"] = strings.SplitN(filepath.Base(p), ".", 2)[0]
-		data["Package"] = filepath.Base(filepath.Dir(p))
+		data["Name"] = strings.TrimSuffix(filepath.Base(p), filepath.Ext(filepath.Base(p)))
 	}
 
 	for k, v := range stdinData() {

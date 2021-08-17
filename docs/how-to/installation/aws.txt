@@ -267,13 +267,12 @@ Printing the default ``master.yaml`` template
 
 .. code::
 
-   det deploy aws dump-master-yaml-template
+   det deploy aws dump-master-config-template
 
 .. _aws-master-yaml-template:
 
-******************************
- Custom master.yaml templates
-******************************
+Custom master.yaml templates
+============================
 
 Advanced users who require a deep customization of master settings (i.e., the ``master.yaml`` config
 file) can use the ``master.yaml`` templating feature. Since ``det deploy aws`` fills in plenty of
@@ -291,9 +290,10 @@ Example workflow:
       det deploy aws dump-master-config-template > /path/to/master.yaml.tmpl
 
 #. Customize the template as you see fit by editing it in any text editor. For example, let's say a
-   user wants to utilize (default) ``p2.8xlarge`` 4-GPU instances for the default compute pool, but
-   they also often run single-GPU notebook jobs, for which a single ``p2.xlarge`` instance would be
-   perfect. So, you want to add a third pool ``compute-pool-solo`` with a customized instance type.
+   user wants to utilize (default) ``p2.8xlarge`` 4-GPU instances for the :ref:`default compute pool
+   <resource-pools>`, but they also often run single-GPU notebook jobs, for which a single
+   ``p2.xlarge`` instance would be perfect. So, you want to add a third pool ``compute-pool-solo``
+   with a customized instance type.
 
    Start with the default template, and find the ``resource_pools`` section:
 
@@ -317,7 +317,7 @@ Example workflow:
 
    .. code:: yaml
 
-      - pool-name: compute-pool-solo
+      - pool_name: compute-pool-solo
         max_aux_containers_per_agent: 0
         provider:
           instance_type: p2.8xlarge
@@ -335,9 +335,8 @@ Example workflow:
 
 .. _aws-modifying-deployment:
 
-************************
- Modifying a Deployment
-************************
+Modifying a Deployment
+======================
 
 To modify an already deployed cluster you have a few options:
 

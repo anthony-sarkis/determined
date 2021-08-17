@@ -325,7 +325,7 @@ Example workflow:
 
    .. code:: yaml
 
-      - pool-name: compute-pool-solo
+      - pool_name: compute-pool-solo
         max_aux_containers_per_agent: 0
         provider:
           instance_type:
