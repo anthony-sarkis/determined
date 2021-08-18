@@ -25,7 +25,8 @@ _INTEG_MARKERS = {
     "cloud",
     "parallel",
     "nightly",
-    "model_hub",
+    "model_hub_transformers",
+    "model_hub_mmdetection",
 }
 
 
