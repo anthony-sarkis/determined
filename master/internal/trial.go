@@ -131,7 +131,7 @@ func (t *trial) Receive(ctx *actor.Context) error {
 		}
 
 	case model.State:
-		return t.transition(ctx, msg)
+		return t.patchState(ctx, msg)
 	case trialSearcherState:
 		t.searcher = msg
 		switch {
@@ -153,7 +153,8 @@ func (t *trial) Receive(ctx *actor.Context) error {
 	case sproto.ContainerLog:
 		if log, err := t.enrichTrialLog(model.TrialLog{
 			ContainerID: ptrs.StringPtr(string(msg.Container.ID)),
-			Message:     msg.Message(),
+			Log:         ptrs.StringPtr(msg.Message()),
+			Level:       msg.Level,
 		}); err != nil {
 			ctx.Log().WithError(err).Warn("dropping container log")
 		} else {
@@ -290,10 +291,10 @@ func (t *trial) allocationExited(ctx *actor.Context, exit *task.AllocationExited
 
 	// Decide if this is permanent.
 	switch {
-	case t.searcher.Complete && t.searcher.Closed:
-		return t.transition(ctx, model.CompletedState)
 	case model.StoppingStates[t.state]:
 		return t.transition(ctx, model.StoppingToTerminalStates[t.state])
+	case t.searcher.Complete && t.searcher.Closed:
+		return t.transition(ctx, model.CompletedState)
 	case exit.Err != nil:
 		ctx.Log().
 			WithError(exit.Err).
@@ -321,27 +322,41 @@ func (t *trial) allocationExited(ctx *actor.Context, exit *task.AllocationExited
 	return errors.Wrap(t.maybeAllocateTask(ctx), "failed to reschedule trial")
 }
 
-// transition transitions the trial and rectifies the underlying allocation state with it.
-func (t *trial) transition(ctx *actor.Context, state model.State) error {
-	// A terminal-state trial never transitions.
-	if terminal := model.TerminalStates[t.state]; terminal {
+// patchState decide if the state patch is valid. If so, we'll transition the trial.
+func (t *trial) patchState(ctx *actor.Context, state model.State) error {
+	switch {
+	case model.TerminalStates[t.state]:
 		ctx.Log().Infof("ignoring transition in terminal state (%s -> %s)", t.state, state)
 		return nil
-	} else if t.state == state {
-		ctx.Log().Infof("ignoring noop transition (%s -> %s)", t.state, state)
+	case model.TerminalStates[state]:
+		ctx.Log().Infof("ignoring patch to terminal state %s", t.state)
 		return nil
+	case t.state == state: // Order is important, else below will catch resent kills.
+		ctx.Log().Infof("resending actions for transition for %s", t.state)
+		return t.transition(ctx, state)
+	case model.StoppingStates[t.state] && !model.TrialTransitions[t.state][state]:
+		ctx.Log().Infof("ignoring patch to less severe stopping state")
+		return nil
+	default:
+		ctx.Log().Infof("patching state after request")
+		return t.transition(ctx, state)
 	}
+}
 
-	// Transition the trial.
-	ctx.Log().Infof("trial changed from state %s to %s", t.state, state)
-	if t.idSet {
-		if err := t.db.UpdateTrial(t.id, state); err != nil {
-			return errors.Wrap(err, "updating trial with end state")
+// transition the trial by rectifying the desired state with our actual state to determined
+// a target state, and then propogating the appropriate signals to the allocation if there is any.
+func (t *trial) transition(ctx *actor.Context, state model.State) error {
+	if t.state != state {
+		ctx.Log().Infof("trial changed from state %s to %s", t.state, state)
+		if t.idSet {
+			if err := t.db.UpdateTrial(t.id, state); err != nil {
+				return errors.Wrap(err, "updating trial with end state")
+			}
 		}
+		t.state = state
 	}
-	t.state = state
 
-	// Rectify the allocation state with the transition.
+	// Rectify our state and the allocation state with the transition.
 	switch {
 	case t.state == model.ActiveState:
 		return t.maybeAllocateTask(ctx)
@@ -371,6 +386,8 @@ func (t *trial) transition(ctx *actor.Context, state model.State) error {
 		}
 	case model.TerminalStates[t.state]:
 		ctx.Self().Stop()
+	default:
+		panic(fmt.Errorf("unmatched state in transition %s", t.state))
 	}
 	return nil
 }

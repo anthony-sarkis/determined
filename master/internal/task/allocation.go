@@ -132,7 +132,7 @@ func (a *Allocation) Receive(ctx *actor.Context) error {
 	case WatchRendezvousInfo, UnwatchRendezvousInfo, RendezvousTimeout:
 		switch err := a.rendezvous.Receive(ctx).(type) {
 		case ErrTimeoutExceeded:
-			ctx.Tell(ctx.Self(), model.TrialLog{Message: err.Error()})
+			ctx.Tell(ctx.Self(), model.TrialLog{Log: ptrs.StringPtr(err.Error())})
 		case nil:
 		default:
 			return err
@@ -273,7 +273,8 @@ func (a *Allocation) TaskContainerStateChanged(
 		}
 	case cproto.Terminated:
 		ctx.Tell(ctx.Self().Parent(), model.TrialLog{
-			Message:     msg.ContainerStopped.String(),
+			Log:         ptrs.StringPtr(msg.ContainerStopped.String()),
+			RankID:      ptrs.IntPtr(a.rendezvous.rank(msg.Container.ID)),
 			ContainerID: ptrs.StringPtr(string(msg.Container.ID)),
 		})
 
